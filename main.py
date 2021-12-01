@@ -53,7 +53,7 @@ def write_to_sheets():
     global previous_time, old_player_count
     now = datetime.now()
     print(previous_time , int(now.strftime("%H")))
-    if previous_time == int(now.strftime("%H")) - 2: # every hour insert player count and time
+    if previous_time == int(now.strftime("%H")) - 1: # every hour insert player count and time
         player_count = players_db.estimated_document_count()
         insert([now.strftime("%H:%M:%S"), player_count - old_player_count])
         old_player_count = player_count
