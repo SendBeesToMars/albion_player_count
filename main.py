@@ -59,7 +59,7 @@ def write_to_sheets():
         old_player_count = player_count
     elif previous_time == 23 and int(now.strftime("%H")) == 0: # on day end, insert the current days count and clear collection
         insert([now.strftime("%H:%M:%S"), players_db.estimated_document_count()], True)
-        players_db.deleteMany({}) # deletes all data in collection
+        players_db.remove({}) # deletes all data in collection
         old_player_count = 0
     previous_time = int(now.strftime("%H"))  
 
