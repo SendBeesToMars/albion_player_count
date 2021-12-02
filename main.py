@@ -22,6 +22,7 @@ TOKEN = os.environ.get('MONGODB_TOKEN')
 client = pymongo.MongoClient(f"mongodb+srv://admin:{TOKEN}@cluster0.ufd5a.mongodb.net/albion?retryWrites=true&w=majority")
 db = client.albion
 players_db = db.albion
+players_db.delete_many({}) # deletes all data in collection
 
 previous_time = int(datetime.now().strftime("%H")) - 1
 if (previous_time == -1):
@@ -35,14 +36,18 @@ scheduler = sched.scheduler(time.time, time.sleep)
 def get_participants(data):
     fights = json.loads(data.content.decode())
     all_players = []
+    
+    now = datetime.now()
+    current_hour = int(now.strftime("%H"))
 
     for fight in fights:
         participants = fight["Participants"]
-        for part in participants:            
-            player_info = { "_id": part["Id"], "name": part["Name"], "time": fight["TimeStamp"] }
+        if int(fight["TimeStamp"].split("T")[1].split(":")[0]) == current_hour: # if event happened in current hour
+            for part in participants:            
+                player_info = { "_id": part["Id"], "name": part["Name"], "time": fight["TimeStamp"] }
+                all_players.append(player_info)
+            player_info = { "_id": fight["Victim"]["Id"], "name": fight["Victim"]["Name"], "time": fight["TimeStamp"] }
             all_players.append(player_info)
-        player_info = { "_id": fight["Victim"]["Id"], "name": fight["Victim"]["Name"], "time": fight["TimeStamp"] }
-        all_players.append(player_info)
 
     try:        
         players_db.insert_many(all_players, ordered=False) # ordered=False to soft ignore duplicates
@@ -59,12 +64,12 @@ def write_to_sheets():
         old_player_count = player_count
     elif previous_time == 23 and int(now.strftime("%H")) == 0: # on day end, insert the current days count and clear collection
         insert([now.strftime("%H:%M:%S"), players_db.estimated_document_count()], True)
-        players_db.remove({}) # deletes all data in collection
+        players_db.delete_many({}) # deletes all data in collection
         old_player_count = 0
     previous_time = int(now.strftime("%H"))  
 
 def get_fights_data(sc, counter): 
-    for i in range(0, 250, 50):
+    for i in range(0, 750, 50):
         data = session.get(f"https://gameinfo.albiononline.com/api/gameinfo/events?limit=50&offset={i}").result()
         if data.status_code != 200:
             print("error: ", data.status_code)
