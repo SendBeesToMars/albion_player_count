@@ -19,7 +19,7 @@ SAMPLE_RANGE_NAME = 'A1:A'
 session = FuturesSession()
 counter = 0
 TOKEN = os.environ.get('MONGODB_TOKEN')
-client = pymongo.MongoClient(f"mongodb+srv://admin:{TOKEN}@cluster0.ufd5a.mongodb.net/albion?retryWrites=true&w=majority")
+client = pymongo.MongoClient(f"mongodb+srv://admin:v8tmtskoQFvzJCIF@cluster0.ufd5a.mongodb.net/albion?retryWrites=true&w=majority")
 db = client.albion
 players_db = db.albion
 players_db.delete_many({}) # deletes all data in collection
@@ -42,15 +42,16 @@ def get_participants(data):
 
     for fight in fights:
         participants = fight["Participants"]
-        if int(fight["TimeStamp"].split("T")[1].split(":")[0]) == current_hour: # if event happened in current hour
-            for part in participants:            
-                player_info = { "_id": part["Id"], "name": part["Name"], "time": fight["TimeStamp"] }
-                all_players.append(player_info)
-            player_info = { "_id": fight["Victim"]["Id"], "name": fight["Victim"]["Name"], "time": fight["TimeStamp"] }
+        for part in participants:            
+            player_info = { "_id": part["Id"], "name": part["Name"], "time": fight["TimeStamp"] }
             all_players.append(player_info)
+        player_info = { "_id": fight["Victim"]["Id"], "name": fight["Victim"]["Name"], "time": fight["TimeStamp"] }
+        all_players.append(player_info)
 
-    try:        
-        players_db.insert_many(all_players, ordered=False) # ordered=False to soft ignore duplicates
+    try:
+        if len(all_players):    
+            pass
+            players_db.insert_many(all_players, ordered=False) # ordered=False to soft ignore duplicates
     except pymongo.errors.BulkWriteError:
         pass # dont care, didnt ask
 
@@ -69,7 +70,7 @@ def write_to_sheets():
     previous_time = int(now.strftime("%H"))  
 
 def get_fights_data(sc, counter): 
-    for i in range(0, 750, 50):
+    for i in range(0, 250, 50):
         data = session.get(f"https://gameinfo.albiononline.com/api/gameinfo/events?limit=50&offset={i}").result()
         if data.status_code != 200:
             print("error: ", data.status_code)
