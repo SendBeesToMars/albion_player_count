@@ -19,7 +19,7 @@ SAMPLE_RANGE_NAME = 'A1:A'
 session = FuturesSession()
 counter = 0
 TOKEN = os.environ.get('MONGODB_TOKEN')
-client = pymongo.MongoClient(f"mongodb+srv://admin:v8tmtskoQFvzJCIF@cluster0.ufd5a.mongodb.net/albion?retryWrites=true&w=majority")
+client = pymongo.MongoClient(f"mongodb+srv://admin:{TOKEN}@cluster0.ufd5a.mongodb.net/albion?retryWrites=true&w=majority")
 db = client.albion
 players_db = db.albion
 players_db.delete_many({}) # deletes all data in collection
@@ -64,7 +64,9 @@ def write_to_sheets():
         insert([now.strftime("%H:%M:%S"), player_count - old_player_count])
         old_player_count = player_count
     elif previous_time == 23 and int(now.strftime("%H")) == 0: # on day end, insert the current days count and clear collection
-        insert([now.strftime("%H:%M:%S"), players_db.estimated_document_count()], True)
+        player_count = players_db.estimated_document_count()
+        insert([now.strftime("%H:%M:%S"), player_count - old_player_count]) # enters hourly data
+        insert([now.strftime("%H:%M:%S"), players_db.estimated_document_count()], True) # enters daily data
         players_db.delete_many({}) # deletes all data in collection
         old_player_count = 0
     previous_time = int(now.strftime("%H"))  
