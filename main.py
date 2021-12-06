@@ -61,12 +61,12 @@ def write_to_sheets():
     print(previous_time , int(now.strftime("%H")))
     if previous_time == int(now.strftime("%H")) - 1: # every hour insert player count and time
         player_count = players_db.estimated_document_count()
-        insert([now.strftime("%H:%M:%S"), player_count - old_player_count])
+        insert([now.strftime("%Y/%m/%d - %H:%M:%S"), player_count - old_player_count])
         old_player_count = player_count
     elif previous_time == 23 and int(now.strftime("%H")) == 0: # on day end, insert the current days count and clear collection
         player_count = players_db.estimated_document_count()
-        insert([now.strftime("%H:%M:%S"), player_count - old_player_count]) # enters hourly data
-        insert([now.strftime("%H:%M:%S"), players_db.estimated_document_count()], True) # enters daily data
+        insert([now.strftime("%Y/%m/%d - %H:%M:%S"), player_count - old_player_count]) # enters hourly data
+        insert([now.strftime("%Y/%m/%d - %H:%M:%S"), players_db.estimated_document_count()], True) # enters daily data
         players_db.delete_many({}) # deletes all data in collection
         old_player_count = 0
     previous_time = int(now.strftime("%H"))  
