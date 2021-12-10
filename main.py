@@ -37,9 +37,6 @@ def get_participants(data):
     fights = json.loads(data.content.decode())
     all_players = []
     
-    now = datetime.now()
-    current_hour = int(now.strftime("%H"))
-
     for fight in fights:
         participants = fight["Participants"]
         for part in participants:            
@@ -72,7 +69,10 @@ def write_to_sheets():
 
 def get_fights_data(sc, counter): 
     for i in range(0, 250, 50):
-        data = session.get(f"https://gameinfo.albiononline.com/api/gameinfo/events?limit=50&offset={i}").result()
+        try:
+            data = session.get(f"https://gameinfo.albiononline.com/api/gameinfo/events?limit=50&offset={i}").result()
+        except:
+            print("Request timed out")
         if data.status_code != 200:
             print("error: ", data.status_code)
             continue
