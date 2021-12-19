@@ -90,7 +90,7 @@ def main():
 def init_sheets():
     creds = None
     if os.path.exists('token.json'):
-        creds = Credentials(enable_reauth_refresh=True)
+        creds = Credentials("token.json", enable_reauth_refresh=True)
         creds = creds.from_authorized_user_file('token.json', SCOPES)
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
